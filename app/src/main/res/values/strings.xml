@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">DiDiAds</string>
+    <string name="app_scheme">didiads</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="facebook_app_id">334467960089822</string>
+
+    <string name="title_activity_ads_detail">DiDiAds Ad Detail</string>
+</resources>
