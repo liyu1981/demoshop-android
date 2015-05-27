@@ -26,4 +26,7 @@ dependencies {
 
     // Google Play Services
     compile 'com.google.android.gms:play-services:6.5.87'
+
+    // Facebook SDK for Android
+    compile 'com.facebook.android:facebook-android-sdk:4.1.0'
 }

@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.facebook.FacebookSdk;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -65,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         createMapView();
 
@@ -94,6 +96,8 @@ public class MainActivity extends ActionBarActivity {
             }
         };
         locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
     }
 
     @Override
