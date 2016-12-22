@@ -1,66 +1,262 @@
 package com.facebook.se.apac.example.liyuhk.didiadsa;
 
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.util.Log;
-import android.widget.Toast;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.facebook.FacebookSdk;
 
-public class MainActivity extends ActionBarActivity {
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-    GoogleMap googleMap;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
-    /**
-     * Initialises the mapview
-     */
-    private void createMapView(){
-        /**
-         * Catch the null pointer exception that
-         * may be thrown when initialising the map
-         */
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+class XMLParser {
+    String getXmlFromUrl(String url) {
+        String xml = null;
+
         try {
-            if(null == googleMap){
-                googleMap = ((MapFragment) getFragmentManager().findFragmentById(
-                        R.id.mainMap)).getMap();
-
-                /**
-                 * If the map is still null after attempted initialisation,
-                 * show an error to the user
-                 */
-                if(null == googleMap) {
-                    Toast.makeText(getApplicationContext(),
-                            "Error creating map",Toast.LENGTH_SHORT).show();
-                }
-            }
-        } catch (NullPointerException exception){
-            Log.e("mapApp", exception.toString());
+            DefaultHttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(url);
+            HttpResponse httpResponse = httpClient.execute(httpPost);
+            HttpEntity httpEntity = httpResponse.getEntity();
+            xml = EntityUtils.toString(httpEntity);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return xml;
     }
 
-    /**
-     * Adds a marker to the map
-     */
-    private void addMarker(double latitude, double longtitude) {
-        /** Make sure that the map has been initialised **/
-        if (null != googleMap) {
-            Log.i("addMarker", "Add marker to: " + "Latitud = " + latitude + "Longitud = " + longtitude);
-            googleMap.addMarker(
-                    new MarkerOptions()
-                            .position(new LatLng(latitude, longtitude))
-                            .title("Marker")
-                            .draggable(true)
-            );
+    Document getDomElement(String xml) {
+        Document doc = null;
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            InputSource is = new InputSource();
+            is.setCharacterStream(new StringReader(xml));
+            doc = db.parse(is);
+        } catch (ParserConfigurationException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
+        } catch (SAXException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
+        } catch (IOException e) {
+            Log.e("Error: ", e.getMessage());
+            return null;
         }
+        return doc;
+    }
+
+    private String getElementValue(Node elem) {
+        Node child;
+        if (elem != null) {
+            if (elem.hasChildNodes()) {
+                for (child = elem.getFirstChild(); child != null; child = child.getNextSibling()) {
+                    if (child.getNodeType() == Node.TEXT_NODE) {
+                        return child.getNodeValue();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    String getValue(Element item, String str) {
+        NodeList n = item.getElementsByTagName(str);
+        return this.getElementValue(n.item(0));
+    }
+}
+
+class RetrieveFeedTask extends AsyncTask<String, Void, ArrayList> {
+
+    ArrayList<HashMap<String, String>> productList = new ArrayList<>();
+    LazyAdapter adapter;
+    ListView view;
+
+    void setListViewAndAdapter(ListView v, LazyAdapter a) {
+        view = v;
+        adapter = a;
+    }
+
+    protected ArrayList doInBackground(String... urls) {
+        ArrayList<HashMap<String, String>> productList = new ArrayList<>();
+        XMLParser parser = new XMLParser();
+        String xml = parser.getXmlFromUrl(urls[0]);
+        Document doc = parser.getDomElement(xml);
+
+        NodeList products = doc.getElementsByTagName(MainActivity.FEED_TAG_ENTRY);
+        for (int i=0; i<products.getLength(); i++) {
+            HashMap<String, String> map = new HashMap<>();
+            Element e = (Element)products.item(i);
+            map.put("_id", String.valueOf(i));
+            map.put(MainActivity.FEED_TAG_ENTRY_ID,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_ID));
+            map.put(MainActivity.FEED_TAG_ENTRY_TITLE,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_TITLE));
+            map.put(MainActivity.FEED_TAG_ENTRY_IMAGE_LINK,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_IMAGE_LINK));
+            map.put(MainActivity.FEED_TAG_ENTRY_DESCRIPTION,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_DESCRIPTION));
+            map.put(MainActivity.FEED_TAG_ENTRY_PRICE,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_PRICE));
+            map.put(MainActivity.FEED_TAG_ENTRY_AVALIABILITY,
+                    parser.getValue(e, MainActivity.FEED_TAG_ENTRY_AVALIABILITY));
+            productList.add(map);
+        }
+
+        return productList;
+    }
+
+    protected void onPostExecute(ArrayList pl) {
+        this.productList.clear();
+        this.productList.addAll(pl);
+        this.adapter.notifyDataSetChanged();
+        this.view.invalidateViews();
+        this.view.refreshDrawableState();
+    }
+}
+
+class LazyAdapter extends BaseAdapter {
+    private static LayoutInflater inflater = null;
+    private ImageLoader imageLoader;
+    private ArrayList<HashMap<String, String>> data;
+
+    LazyAdapter(Activity a, ArrayList<HashMap<String, String>> d) {
+        data = d;
+        inflater = (LayoutInflater)(a.getSystemService(Context.LAYOUT_INFLATER_SERVICE));
+        imageLoader = new ImageLoader(a.getApplicationContext(),
+                R.drawable.placeholder_pushee);
+    }
+
+    public int getCount() {
+        return data.size();
+    }
+
+    public Object getItem(int position) {
+        return position;
+    }
+
+    public long getItemId(int position) {
+        HashMap<String, String> p = data.get(position);
+        return Long.parseLong(p.get("_id"));
+    }
+
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View vi = convertView;
+        if (convertView == null) {
+            vi = inflater.inflate(R.layout.list_item, null);
+        }
+
+        TextView title = (TextView) vi.findViewById(R.id.title);
+        TextView description = (TextView) vi.findViewById(R.id.description);
+        ImageView thumb = (ImageView) vi.findViewById(R.id.list_image);
+
+        HashMap<String, String> product = data.get(position);
+
+        String price = product.get(MainActivity.FEED_TAG_ENTRY_PRICE);
+        String avaliability = product.get(MainActivity.FEED_TAG_ENTRY_AVALIABILITY);
+        String d = String.format("Price: %s, Avaliability: %s", price, avaliability);
+
+        title.setText(product.get(MainActivity.FEED_TAG_ENTRY_TITLE));
+        description.setText(d);
+        imageLoader.DisplayImage(product.get(MainActivity.FEED_TAG_ENTRY_IMAGE_LINK), thumb);
+
+        vi.setBackgroundColor(Color.WHITE);
+
+        return vi;
+    }
+
+    public void installNewData(ArrayList<HashMap<String, String>> d) {
+        data = d;
+        this.notifyDataSetChanged();
+    }
+}
+
+public class MainActivity extends AppCompatActivity {
+
+    static final String FEED_URL =
+            "http://104.236.187.180/magento/facebook_adstoolbox_product_feed.xml";
+    static final String FEED_TAG_ENTRY = "entry";
+    static final String FEED_TAG_ENTRY_ID = "g:id";
+    static final String FEED_TAG_ENTRY_TITLE = "g:title";
+    static final String FEED_TAG_ENTRY_DESCRIPTION = "g:description";
+    static final String FEED_TAG_ENTRY_IMAGE_LINK = "g:image_link";
+    static final String FEED_TAG_ENTRY_PRICE = "g:price";
+    static final String FEED_TAG_ENTRY_AVALIABILITY = "g:availability";
+
+    ListView listView;
+    LazyAdapter listAdapter;
+    RetrieveFeedTask retrieveFeedTask;
+
+    private DemoshopSession ds = new DemoshopSession();
+
+    ArrayList<String> calculateCategoryList() {
+        HashSet<String> allCategories = new HashSet<>();
+        for (HashMap<String, String> product: retrieveFeedTask.productList) {
+            String title = product.get(MainActivity.FEED_TAG_ENTRY_TITLE);
+            String[] parts = title.split("\\s+");
+            allCategories.add(parts[parts.length - 1]);
+        }
+        ArrayList<String> a = new ArrayList<>(allCategories);
+        Collections.sort(a);
+        a.add(0, "ALL");
+        return a;
+    }
+
+    ArrayList<HashMap<String, String>> calculateProductsInCategory() {
+        if (ds.selectedCategory.equals("ALL")) {
+            return retrieveFeedTask.productList;
+        }
+        ArrayList<HashMap<String, String>> list = new ArrayList<>();
+        for (HashMap<String, String> product: retrieveFeedTask.productList) {
+            String title = product.get(MainActivity.FEED_TAG_ENTRY_TITLE);
+            if (title.trim().endsWith(ds.selectedCategory)) {
+                list.add(product);
+            }
+        }
+        return list;
     }
 
     @Override
@@ -68,54 +264,64 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        createMapView();
 
-        // init the marker
-        addMarker(0, 0);
+        retrieveFeedTask = new RetrieveFeedTask();
+        listView = (ListView)findViewById(R.id.listView);
+        listAdapter = new LazyAdapter(this, this.calculateProductsInCategory());
+        listView.setAdapter(listAdapter);
+        retrieveFeedTask.setListViewAndAdapter(listView, listAdapter);
+        retrieveFeedTask.execute(FEED_URL);
 
-        /* Use the LocationManager class to obtain GPS locations */
-        LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        LocationListener locListener = new LocationListener() {
+        listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
-            public void onLocationChanged(Location loc) {
-                addMarker(loc.getLatitude(), loc.getLongitude());
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+                Intent i = new Intent(MainActivity.this, DetailActivity.class);
+                ds.selectedProduct = retrieveFeedTask.productList.get((int)id);
+                ds.saveToIntent(i);
+                startActivity(i);
             }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Toast.makeText(getApplicationContext(), "Gps Disabled", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                Toast.makeText(getApplicationContext(), "Gps Enabled", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-        };
-        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+        });
 
         FacebookSdk.sdkInitialize(getApplicationContext());
     }
 
     @Override
+    protected void onNewIntent(Intent i) {
+        if (i != null) {
+            setIntent(i);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent i = getIntent();
+        ds = DemoshopSession.ExtractFromIntent(i);
+        listAdapter.installNewData(this.calculateProductsInCategory());
+        listView.invalidateViews();
+        listView.refreshDrawableState();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_select_category) {
+            Intent i = new Intent(this, CategoryActivity.class);
+            this.ds.saveToIntent(i);
+            i.putExtra("categoryList", this.calculateCategoryList());
+            startActivity(i);
+            return true;
+        } else if (id == R.id.action_show_cart) {
+            Intent i = new Intent(this, CartActivity.class);
+            this.ds.saveToIntent(i);
+            startActivity(i);
             return true;
         }
 
