@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -283,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
     }
 
     @Override

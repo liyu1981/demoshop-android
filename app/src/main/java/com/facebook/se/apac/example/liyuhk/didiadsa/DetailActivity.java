@@ -11,12 +11,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsConstants;
+import com.facebook.appevents.AppEventsLogger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DetailActivity extends AppCompatActivity {
 
     private DemoshopSession ds;
+    private AppEventsLogger fblogger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +31,9 @@ public class DetailActivity extends AppCompatActivity {
         ds = DemoshopSession.ExtractFromIntent(getIntent());
 
         setContentView(R.layout.activity_detail);
+
+        final String productID = ds.selectedProduct.get(MainActivity.FEED_TAG_ENTRY_ID);
+        final float productPrice = DemoshopSession.calculateProductPrice(ds.selectedProduct);
 
         ImageView imageView = (ImageView)findViewById(R.id.product_image);
         TextView titleView = (TextView)findViewById(R.id.product_title);
@@ -49,10 +57,31 @@ public class DetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent i = new Intent(DetailActivity.this, CartActivity.class);
                 DetailActivity.this.ds.addSelectedProductToCart();
+
+                Bundle fbparams = new Bundle();
+                fbparams.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, productID);
+                fbparams.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "product");
+                fbparams.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "USD");
+                DetailActivity.this.fblogger.logEvent(AppEventsConstants.EVENT_NAME_ADDED_TO_CART,
+                        productPrice,
+                        fbparams);
+
                 DetailActivity.this.ds.saveToIntent(i);
                 startActivity(i);
             }
         });
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+        fblogger = AppEventsLogger.newLogger(this);
+
+        Bundle fbparams = new Bundle();
+        fbparams.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, productID);
+        fbparams.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "product");
+        fbparams.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "USD");
+        fblogger.logEvent(AppEventsConstants.EVENT_NAME_VIEWED_CONTENT,
+                productPrice,
+                fbparams);
     }
 
     @Override

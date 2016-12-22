@@ -2,9 +2,13 @@ package com.facebook.se.apac.example.liyuhk.didiadsa;
 
 import android.content.Intent;
 
+import org.json.JSONArray;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static java.lang.Float.*;
 
 class DemoshopSession {
 
@@ -35,16 +39,33 @@ class DemoshopSession {
         selectedProduct = null;
         cart.clear();
     }
+
+    static float calculateProductPrice(HashMap<String, String> p) {
+        String pricestr = p.get(MainActivity.FEED_TAG_ENTRY_PRICE);
+        String[] parts = pricestr.split("\\s+");
+        return parseFloat(parts[0].replace("," , "."));
+    }
     
     float calculateTotalPrice() {
         float total = 0;
         for (HashMap<String, String> p: cart) {
-            String pricestr = p.get(MainActivity.FEED_TAG_ENTRY_PRICE);
-            String[] parts = pricestr.split("\\s+");
-            float price = Float.parseFloat(parts[0].replace("," , "."));
-            total += price;
+            total += calculateProductPrice(p);
         }
         return total;
+    }
+
+    ArrayList<String> calculateCartContentIDs() {
+        ArrayList<String> list = new ArrayList<>();
+        for (HashMap<String, String> p: cart) {
+            list.add(p.get(MainActivity.FEED_TAG_ENTRY_ID));
+        }
+        return list;
+    }
+
+    String calculateCartContentIDsJSONStr() {
+        ArrayList<String> list = calculateCartContentIDs();
+        JSONArray jsArray = new JSONArray(list);
+        return jsArray.toString();
     }
 
     static DemoshopSession ExtractFromIntent(Intent i) {

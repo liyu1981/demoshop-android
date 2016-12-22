@@ -8,6 +8,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+
 import java.util.ArrayList;
 
 public class CategoryActivity extends AppCompatActivity {
@@ -38,5 +41,9 @@ public class CategoryActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
     }
+
 }
