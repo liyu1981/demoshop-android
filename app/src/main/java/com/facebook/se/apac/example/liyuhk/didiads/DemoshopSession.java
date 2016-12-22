@@ -1,10 +1,9 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
 import android.content.Intent;
 
 import org.json.JSONArray;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 

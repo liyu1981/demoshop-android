@@ -1,7 +1,6 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
 import android.content.Intent;
-import android.provider.SyncStateContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,9 +12,6 @@ import android.widget.ListView;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsConstants;
 import com.facebook.appevents.AppEventsLogger;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class CartActivity extends AppCompatActivity {
 
@@ -35,7 +31,7 @@ public class CartActivity extends AppCompatActivity {
         final float cartTotalPrice = ds.calculateTotalPrice();
 
         ListView listView = (ListView)findViewById(R.id.cart_list);
-        LazyAdapter listAdapter = new LazyAdapter(this, ds.cart);
+        LazyAdapter listAdapter = new LazyAdapter(this, ds.cart, MainActivity.FILE_CACHE_DIR);
         listView.setAdapter(listAdapter);
 
         Button payButton = (Button)findViewById(R.id.pay);

@@ -6,11 +6,11 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        applicationId "com.facebook.se.apac.example.liyuhk.didiadsa"
+        applicationId "com.facebook.se.apac.example.liyuhk.didiads"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 3
-        versionName "1.0"
+        versionName "2.0"
     }
     buildTypes {
         release {

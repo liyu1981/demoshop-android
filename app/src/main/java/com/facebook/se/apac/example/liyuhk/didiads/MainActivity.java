@@ -1,11 +1,16 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +26,7 @@ import android.widget.TextView;
 
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.applinks.AppLinkData;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -38,12 +44,10 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -164,11 +168,11 @@ class LazyAdapter extends BaseAdapter {
     private ImageLoader imageLoader;
     private ArrayList<HashMap<String, String>> data;
 
-    LazyAdapter(Activity a, ArrayList<HashMap<String, String>> d) {
+    LazyAdapter(Activity a, ArrayList<HashMap<String, String>> d, String fileCacheDirName) {
         data = d;
         inflater = (LayoutInflater)(a.getSystemService(Context.LAYOUT_INFLATER_SERVICE));
         imageLoader = new ImageLoader(a.getApplicationContext(),
-                R.drawable.placeholder_pushee);
+                R.drawable.placeholder_pushee, fileCacheDirName);
     }
 
     public int getCount() {
@@ -217,6 +221,7 @@ class LazyAdapter extends BaseAdapter {
 
 public class MainActivity extends AppCompatActivity {
 
+    static final String FILE_CACHE_DIR = "demoshop";
     static final String FEED_URL =
             "http://104.236.187.180/magento/facebook_adstoolbox_product_feed.xml";
     static final String FEED_TAG_ENTRY = "entry";
@@ -268,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
 
         retrieveFeedTask = new RetrieveFeedTask();
         listView = (ListView)findViewById(R.id.listView);
-        listAdapter = new LazyAdapter(this, this.calculateProductsInCategory());
+        listAdapter = new LazyAdapter(this, this.calculateProductsInCategory(), FILE_CACHE_DIR);
         listView.setAdapter(listAdapter);
         retrieveFeedTask.setListViewAndAdapter(listView, listAdapter);
         retrieveFeedTask.execute(FEED_URL);
@@ -285,6 +290,34 @@ public class MainActivity extends AppCompatActivity {
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
+
+        AppLinkData.fetchDeferredAppLinkData(this, new AppLinkData.CompletionHandler() {
+            @Override
+            public void onDeferredAppLinkDataFetched(AppLinkData ald) {
+                if (ald != null) {
+                    final String deferreddeeplink = ald.toString();
+                    final String advertiserid =
+                            AppEventsLogger.getAnonymousAppDeviceGUID(getApplicationContext());
+                    final String msg =
+                            String.format("DEFERRED DEEPLINK: %s\n\nAdvertiser ID: %s",
+                                    deferreddeeplink, advertiserid);
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Got Deferred Deeplink Request")
+                            .setMessage(msg)
+                            .setPositiveButton("Copy & Close",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                    ClipboardManager clipboard =
+                                            (ClipboardManager) getSystemService(
+                                                    Context.CLIPBOARD_SERVICE);
+                                    ClipData clip = ClipData.newPlainText("didiads", msg);
+                                    clipboard.setPrimaryClip(clip);
+                                }
+                            })
+                            .show();
+                }
+            }
+        });
     }
 
     @Override
@@ -298,10 +331,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Intent i = getIntent();
-        ds = DemoshopSession.ExtractFromIntent(i);
-        listAdapter.installNewData(this.calculateProductsInCategory());
-        listView.invalidateViews();
-        listView.refreshDrawableState();
+
+        Uri uriquery = i.getData();
+        if (uriquery != null) {
+            final String deeplink = uriquery.toString();
+            final String advertiserid =
+                    AppEventsLogger.getAnonymousAppDeviceGUID(getApplicationContext());
+            final String msg =
+                    String.format("DEEPLINK: %s\n\nAdvertiser ID: %s", deeplink, advertiserid);
+            new AlertDialog.Builder(this)
+                    .setTitle("Got Deeplink Request")
+                    .setMessage(msg)
+                    .setPositiveButton("Copy & Close", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            ClipboardManager clipboard =
+                                    (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipData clip = ClipData.newPlainText("didiads", msg);
+                            clipboard.setPrimaryClip(clip);
+                        }
+                    })
+                    .show();
+        } else {
+            ds = DemoshopSession.ExtractFromIntent(i);
+            listAdapter.installNewData(this.calculateProductsInCategory());
+            listView.invalidateViews();
+            listView.refreshDrawableState();
+        }
     }
 
     @Override

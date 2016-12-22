@@ -1,6 +1,5 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,9 +13,6 @@ import android.widget.TextView;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsConstants;
 import com.facebook.appevents.AppEventsLogger;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -42,8 +38,8 @@ public class DetailActivity extends AppCompatActivity {
         TextView availiabilityView = (TextView)findViewById(R.id.product_avaliability);
         Button buyButton = (Button)findViewById(R.id.buy_buy_buy);
 
-        ImageLoader imageLoader =
-                new ImageLoader(getApplicationContext(), R.drawable.placeholder_pushee);
+        ImageLoader imageLoader = new ImageLoader(getApplicationContext(),
+                R.drawable.placeholder_pushee, MainActivity.FILE_CACHE_DIR);
         imageLoader.DisplayImage(
                 ds.selectedProduct.get(MainActivity.FEED_TAG_ENTRY_IMAGE_LINK), imageView);
 

@@ -1,4 +1,4 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

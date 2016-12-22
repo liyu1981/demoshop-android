@@ -1,9 +1,10 @@
-package com.facebook.se.apac.example.liyuhk.didiadsa;
+package com.facebook.se.apac.example.liyuhk.didiads;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -25,16 +26,17 @@ import java.util.concurrent.Executors;
 class FileCache {
     private File cacheDir;
 
-    FileCache(Context context) {
-        //Find the dir to save cached images
+    FileCache(Context context, String fileCacheDirName) {
         if (android.os.Environment.getExternalStorageState().equals(
                 android.os.Environment.MEDIA_MOUNTED)) {
-            cacheDir = new File(android.os.Environment.getExternalStorageDirectory(), "LazyList");
+            cacheDir = new File(android.os.Environment.getExternalStorageDirectory(),
+                    fileCacheDirName);
         } else {
             cacheDir = context.getCacheDir();
         }
         if (!cacheDir.exists()) {
-            cacheDir.mkdirs();
+            boolean r = cacheDir.mkdirs();
+            Log.i("mkdir file cache dir:", String.valueOf(r));
         }
     }
 
@@ -82,17 +84,17 @@ class MemoryCache {
 
 class ImageLoader {
 
-    private int stub_id;
+    private int stubID;
     private MemoryCache memoryCache = new MemoryCache();
     private FileCache fileCache;
     private Map<ImageView, String> imageViews =
             Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     private ExecutorService executorService;
 
-    ImageLoader(Context context, int stubid) {
-        fileCache = new FileCache(context);
+    ImageLoader(Context context, int stubid, String fileCacheDirName) {
+        fileCache = new FileCache(context, fileCacheDirName);
         executorService = Executors.newFixedThreadPool(5);
-        stub_id = stubid;
+        stubID = stubid;
     }
 
     void DisplayImage(String url, ImageView imageView) {
@@ -102,7 +104,7 @@ class ImageLoader {
             imageView.setImageBitmap(bitmap);
         else {
             queuePhoto(url, imageView);
-            imageView.setImageResource(stub_id);
+            imageView.setImageResource(stubID);
         }
     }
 
@@ -113,19 +115,16 @@ class ImageLoader {
 
     private Bitmap getBitmap(String url) {
         File f = fileCache.getFile(url);
-        Bitmap bitmap;
-        URL imageUrl;
-
-        //from SD cache
         Bitmap b = decodeFile(f);
         if (b != null) {
             return b;
         }
 
-        //from web
+        Bitmap bitmap;
+        URL imageUrl;
         try {
             imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
+            HttpURLConnection conn = (HttpURLConnection)imageUrl.openConnection();
             conn.setConnectTimeout(30000);
             conn.setReadTimeout(30000);
             conn.setInstanceFollowRedirects(true);
@@ -227,7 +226,7 @@ class ImageLoader {
                 if (bitmap != null) {
                     photoToLoad.imageView.setImageBitmap(bitmap);
                 } else {
-                    photoToLoad.imageView.setImageResource(stub_id);
+                    photoToLoad.imageView.setImageResource(stubID);
                 }
             }
         }
