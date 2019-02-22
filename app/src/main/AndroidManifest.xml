@@ -13,46 +13,53 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light">
         <activity
-            android:name="com.facebook.se.apac.example.liyuhk.didiads.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="didiads" android:host="product" />
+
+                <data
+                    android:host="product"
+                    android:scheme="didiads" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.facebook.se.apac.example.liyuhk.didiads.DetailActivity"
+            android:name=".DetailActivity"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.facebook.se.apac.example.liyuhk.didiads.CartActivity"
+            android:name=".CartActivity"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.facebook.se.apac.example.liyuhk.didiads.CategoryActivity"
+            android:name=".CategoryActivity"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-         </activity>
+        </activity>
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
+        <activity android:name=".FBEActivity" />
+        <activity android:name=".FBEWebViewActivity"></activity>
     </application>
 
 </manifest>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FBEActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="22dp"
+            android:text="Facebook Business Extension"
+            android:textColor="@color/com_facebook_button_background_color"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:layout_editor_absoluteX="45dp"
+            tools:layout_editor_absoluteY="57dp" />
+
+        <Button
+            android:id="@+id/action_launch_fbe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="83dp"
+            android:background="@drawable/com_facebook_button_like_background"
+            android:text="Launch"
+            android:textColor="@color/com_facebook_share_button_text_color"
+            tools:layout_editor_absoluteX="161dp"
+            tools:layout_editor_absoluteY="129dp" />
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="382dp"
+            android:layout_height="373dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="8dp"
+            android:ems="10"
+            android:inputType="textMultiLine"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="16dp" />
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

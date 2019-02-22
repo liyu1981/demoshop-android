@@ -3,12 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item
         android:id="@+id/action_select_category"
-        android:title="Category"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom" />
+        android:title="Category" />
     <item
         android:id="@+id/action_show_cart"
-        android:title="Cart"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom" />
+        android:title="Cart"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_fbe"
+        android:orderInCategory="101"
+        android:title="FBE" />
 </menu>

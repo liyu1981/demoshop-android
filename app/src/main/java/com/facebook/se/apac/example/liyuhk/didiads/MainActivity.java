@@ -56,7 +56,6 @@ import javax.xml.parsers.ParserConfigurationException;
 class XMLParser {
     String getXmlFromUrl(String url) {
         String xml = null;
-
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(url);
@@ -265,7 +264,6 @@ public class MainActivity extends AppCompatActivity {
         return list;
     }
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -292,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
         AppEventsLogger.activateApp(this);
 
         AppLinkData.fetchDeferredAppLinkData(this, new AppLinkData.CompletionHandler() {
-            @Override
             public void onDeferredAppLinkDataFetched(AppLinkData ald) {
                 if (ald != null) {
                     final String deferreddeeplink = ald.toString();
@@ -320,14 +317,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
     protected void onNewIntent(Intent i) {
         if (i != null) {
             setIntent(i);
         }
     }
 
-    @Override
     protected void onResume() {
         super.onResume();
         Intent i = getIntent();
@@ -359,13 +354,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
@@ -377,6 +370,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.action_show_cart) {
             Intent i = new Intent(this, CartActivity.class);
+            this.ds.saveToIntent(i);
+            startActivity(i);
+            return true;
+        } else if (id == R.id.action_fbe) {
+            Intent i = new Intent(this, FBEActivity.class);
             this.ds.saveToIntent(i);
             startActivity(i);
             return true;
