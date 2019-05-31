@@ -60,6 +60,7 @@
 
         <activity android:name=".FBEActivity" />
         <activity android:name=".FBEWebViewActivity"></activity>
+        <receiver android:name=".AlarmReceiver"></receiver>
     </application>
 
 </manifest>
